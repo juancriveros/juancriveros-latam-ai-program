@@ -87,9 +87,9 @@ def query_gemini(prompt, model="gemini-pro"):
         return f"Error querying Gemini: {e}"
 
 DEFAULT_PROMPTS = {
-    "Simple": "Explain photosynthesis.",
-    "Role": "You are a biology professor. Explain photosynthesis to a high school student.",
-    "Chain-of-Thought": """Explain photosynthesis step-by-step, start with inputs (what plants need) and end with outputs.""",
+    "Few shot": "A palindrome is any word or phrase or sentence or dates of the year that reads the same both forward and backward such as: Evil, oliveMadam in Eden, Im Adam. and Taco cat. give me three more examples",
+    "Persona" : "You are housemaid, tell me the 3 most difficult taks you have to do",
+    "Negative" : "Write a sentence of 10 words without using the vowel a"
 }
 
 
@@ -123,7 +123,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Week 1 Prompt Engineering Lab Runner")
     parser.add_argument("--models", choices=["local", "cloud", "all"], default="all", help="Subset of models to query.")
     parser.add_argument("--custom-prompt", dest="custom_prompt", help="Add an extra custom prompt variant.")
-    parser.add_argument("--log-json", action="store_true", help="Write results to results/week1_run_<timestamp>.json")
+    parser.add_argument("--log-json", action="store_true", help="Write results to results/week1_run_<timestamp>.jEvil, olive!son")
     parser.add_argument("--no-chain", action="store_true", help="Skip chain-of-thought prompt variant.")
     parser.add_argument("--timeout", type=int, default=30, help="HTTP timeout for local model queries.")
     args = parser.parse_args()
