@@ -93,3 +93,35 @@ Answer briefly:
     *   Break down complex tasks into smaller, more manageable prompts.
 
 ---
+
+# Week 2:
+
+## Evaluation & Logging
+
+| Query | Mode (raw/RAG) | k | Retrieved IDs | Strengths | Weaknesses | Failure Modes | Notes | Latency (s) |
+|--------|------|---|----------------|------------|-------------|----------------|--------|--------------|
+| How can I return a product? | RAG | 1 | faq1 | Completeness | Brevity | verbose | Long but it invents steps. | 9.23 |
+| How can I return a product? | RAG | 2 | faq1, faq10 | Grounding | Brevity | verbose | Some redundency | 5.68 |
+| How can I return a product? | RAG | 3 | faq1, faq10, faq4 | Completeness | Brevity | partial | Good. | 4.17 |
+| How can I return a product? | RAG | 4 | faq1, faq10, faq4, faq2 | Traceability | Relevance | irrelevant | Adds trancking context. | 5.10 |
+| What's the process for tracking my package? | RAG | 1 | faq2 | Relevance | Brevity | – | Precise. | 3.15 |
+| What's the process for tracking my package? | RAG | 2 | Grounding | Brevity | – | Some additional context | 3.56 |
+| What's the process for tracking my package? | RAG | 3 | Traceability | Relevance | irrelevant | Adds some incorrect context. | 3.74 |
+| What's the process for tracking my package? | RAG | 4 | Traceability | Relevance | irrelevant | Add wrong context. | 4.70 |
+| Do you ship to Canada? | RAG | 1 | faq3 | Grounding | – | – | Good. | 1.32 |
+| Do you ship to Canada? | RAG | 2 | faq3, faq8 | Completeness | Grounding | partial | Use good context | 1.96 |
+| Do you ship to Canada? | RAG | 3 | faq3, faq8, faq6 | Traceability | Relevance | irrelevant | Add wrong context. | 1.89 |
+| Do you ship to Canada? | RAG | 4 | Traceability | Grounding | verbose | Ad wrong context. | 2.44 |
+| What are the support hours? | RAG | 1 | faq7 | Grounding | – | – | Concise. | 2.38 |
+| What are the support hours? | RAG | 2 | Traceability | Relevance | irrelevant | Adds wrong context. | 1.66 |
+| What are the support hours? | RAG | 3 | Completeness | Brevity | partial | Good. | 2.23 |
+| What are the support hours? | RAG | 4 | Traceability | Relevance | irrelevant | Adds mwrong context. | 2.44 |
+| Can I pay with Bitcoin? | RAG | 1 | faq5 | Grounding | Brevity | verbose | Reapeatable. | 2.63 |
+| Can I pay with Bitcoin? | RAG | 2 | faq5, faq3 | Grounding | Brevity | verbose | Good. | 2.90 |
+| Can I pay with Bitcoin? | RAG | 3 | faq5, faq3, faq6 | Grounding | Brevity | verbose | Good. | 3.51 |
+| Can I pay with Bitcoin? | RAG | 4 | faq5, faq3, faq6, faq4 | Grounding | Brevity | verbose | Good. | 3.00 |
+| How can I return a product? | raw | – | – | Completeness | Grounding | hallucination | It invents the process. | 23.87 |
+| What's the process for tracking my package? | raw | – | – | Completeness | Brevity | verbose | Generic. | 14.65 |
+| Do you ship to Canada? | raw | – | – | Relevance | Grounding | partial | Generic. | 6.36 |
+| What are the support hours? | raw | – | – | Completeness | Grounding | stale | Invents process. | 5.80 |
+| Can I pay with Bitcoin? | raw | – | – | Completeness | Grounding | partial | Creates another policies. | 6.40 |

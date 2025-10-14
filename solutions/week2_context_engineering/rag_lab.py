@@ -1,6 +1,8 @@
 import requests
 import json
 import chromadb
+import argparse
+import time
 
 # --- 1. Configuration ---
 OLLAMA_ENDPOINT = "http://localhost:11434/api"
@@ -64,7 +66,30 @@ def index_knowledge_base():
             )
     print("Indexing complete.")
 
-def query_rag_agent(user_query):
+def format_retrieved_context(results):
+    """
+    Envuelve los documentos recuperados en bloques de contexto claros.
+    """
+    if not results or not results.get("documents"):
+        return "No relevant information found."
+
+    docs = results["documents"][0]
+    metas = results.get("metadatas", [[]])[0] if results.get("metadatas") else [{}]*len(docs)
+    ids = results.get("ids", [[]])[0] if results.get("ids") else [f"doc{i+1}" for i in range(len(docs))]
+
+    wrapped = []
+    citations = []
+    for i, (doc, meta, _id) in enumerate(zip(docs, metas, ids), start=1):
+        question = meta.get("question", "")
+        wrapped.append(
+            f"\n---CONTEXT BLOCK {i}---"
+            f"\n{doc}"
+            f"\n---END CONTEXT BLOCK {i}---"
+        )
+        citations.append(f"- {_id}: \"{question}\"")
+    return "\n".join(wrapped), citations
+
+def query_rag_agent(user_query, k=2, no_context=False):
     """
     Queries the RAG agent with a user's question.
     """
@@ -78,23 +103,48 @@ def query_rag_agent(user_query):
     # 2. Query ChromaDB for relevant context
     results = collection.query(
         query_embeddings=[query_embedding],
-        n_results=2  # Retrieve the top 2 most relevant documents
+        n_results=k  # Retrieve the top 2 most relevant documents
     )
     
-    retrieved_context = "\n".join(results['documents'][0]) if results['documents'] else "No relevant information found."
+    retrieved_context = ""
+    if not no_context:
+        results = collection.query(query_embeddings=[query_embedding], n_results=k)
+        retrieved_context, citations = format_retrieved_context(results)
+        print("Retrieved context Juan:")
+        print(retrieved_context)
+    else:
+        print("(No context mode enabled)")
     
-    print(f"Retrieved context: {retrieved_context}")
+    #retrieved_context = "\n".join(results['documents'][0]) if results['documents'] else "No relevant information found."
+    
+    #print(f"Retrieved context: {retrieved_context}")
 
     # 3. Construct the prompt for the LLM
-    prompt = f"""
-    You are a helpful FAQ assistant. A user has asked the following question:
+    # prompt = f"""
+    # You are a helpful FAQ assistant. A user has asked the following question:
+    # '{user_query}'
+
+    # Here is some context that might be relevant:
+    # '{retrieved_context}'
+
+    # Based on this context, please provide a clear and concise answer. If the context is not relevant, say so.
+    # """
+
+    if no_context:
+        prompt = f"""
+ You are a helpful FAQ assistant. A user has asked the following question:
+    '{user_query}'
+"""
+    else:
+        prompt = f"""
+ You are a helpful FAQ assistant. A user has asked the following question:
     '{user_query}'
 
-    Here is some context that might be relevant:
-    '{retrieved_context}'
+Here is some context that might be relevant:
+{retrieved_context}
 
-    Based on this context, please provide a clear and concise answer. If the context is not relevant, say so.
-    """
+Based on this context, please provide a clear and concise answer. If the context is not relevant, say so.
+"""
 
     # 4. Send the prompt to the LLM
     try:
@@ -103,12 +153,23 @@ def query_rag_agent(user_query):
             json={"prompt": prompt, **OLLAMA_CONFIG}
         )
         response.raise_for_status()
-        return json.loads(response.text)["response"]
+        answer = json.loads(response.text)["response"]
     except requests.exceptions.RequestException as e:
         return f"Error communicating with the model: {e}"
 
+    if not no_context and citations:
+        answer += "\n\n[Citations]\n" + "\n".join(citations)
+
+    return answer
+
 # --- 5. Main Execution ---
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Week 1 Prompt Engineering Lab Runner")
+    parser.add_argument("--k", default=2, help="Number of results kept.")
+    parser.add_argument('--no-context', action='store_true', help='Allow generation without retrieval')
+    args = parser.parse_args()
+
+    print([args.k])
     # Check if the collection is empty before indexing
     if collection.count() == 0:
         index_knowledge_base()
@@ -125,5 +186,9 @@ if __name__ == "__main__":
     ]
 
     for query in test_queries:
-        answer = query_rag_agent(query)
+        start_time = time.time() 
+        answer = query_rag_agent(query, k=int(args.k), no_context=args.no_context)
+        end_time = time.time()  # ⏱️ fin del cronómetro
+        latency = end_time - start_time
         print(f"Answer: {answer}")
+        print(f"Latency: {latency:.2f} seconds")
