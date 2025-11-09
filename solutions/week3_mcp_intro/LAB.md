@@ -83,12 +83,12 @@ Improvement Axes: tool schema richness, input validation, error handling, cachin
 Log rows in `PROMPT_PLAYBOOK.md` (Week 3 section):
 | Query | Intent Parsed | Tool? | Tool Latency ms | Success | Answer Quality (1–5) | Notes |
 |-------|---------------|-------|-----------------|---------|----------------------|-------|
-
-Success Criteria:
-- Tool invoked only when needed
-- City parameter extracted correctly (≥3 test cities)
-- Error handled (unknown city) without crash
-- Answer cites tool data explicitly (e.g., “According to tool…”) 
+|What is the weather in Madrid? |N/A|llama3|11.93|Yes|1|It does not say the current weather because its an AI, it gives just a range of tempertures per season.|
+|What is the weather in Madrid? |N/A|mistral|6.38|Yes|3|Same as llama3 but it returned the current season and average temperature|
+|What is the weather in Madrid? |get_weather|yes|0.01|Yes|5|Weather in the city|
+|Can you tell me the current weather in Paris? Thanks |get_weather|yes|0.02|Yes|5|Weather in the city|
+|Hey I am in France, Paris and I want to travel to New York this weekend. Can you tell me the weather there? Thanks |null|No|0.0|Yes|1|Prompt has to be in an specific way|
+|Weather in Bot? |get_weather|yes|0.02|Yes|1|Is not a city.|
 
 ---
 ## 8. Failure Modes
