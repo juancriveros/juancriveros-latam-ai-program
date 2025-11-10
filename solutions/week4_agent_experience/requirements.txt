@@ -1,0 +1,6 @@
+chromadb
+fastapi
+uvicorn
+requests
+pandas
+python-docx
